@@ -1,0 +1,96 @@
+apiVersion: serverless.kyma-project.io/v1alpha3
+kind: Function
+metadata:
+  name: my-test-function
+  namespace: default
+  labels:
+    app: my-test-function
+spec:
+  runtime: nodejs16
+  runtimeImageOverride: any-image:latest
+  customRuntimeConfiguration:
+    name: "config"
+    namespace: "default"
+  templates:
+    function: # maybe deployment? or pod? or split it into pod and deployment?
+      metadata:
+        labels:
+          foo1: tmp1
+        annoations:
+          foo2: tmp2
+      source:
+        # gitRepository:
+        #   url: github.com/username/repo
+        #   baseDir: "/"
+        #   reference: "branchA"
+        #   auth:
+        #     type: basic
+        #     secretName: secret-name
+        inline:
+          dependencies: |
+            {
+              "name": "hellowithdeps",
+              "version": "0.0.1",
+              "dependencies": {
+                "end-of-stream": "^1.4.1",
+                "from2": "^2.3.0",
+                "lodash": "^4.17.5"
+              }
+            }
+          source: |
+            module.exports = {
+              main: function(event, context) {
+                const name = process.env.PERSON_NAME;
+                return 'Hello ' + name;
+              }
+            }
+      scaleConfig:
+        minReplicas: 3
+        maxReplicas: 3
+      # replicas: 1
+      env:
+        - name: PERSON_NAME
+          value: "John"
+      resources:
+        limits:
+          cpu: 1
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 500Mi
+    build:
+      metadata:
+        labels:
+          foo1: tmp1
+        annoations:
+          foo2: tmp2
+      resources:
+        limits:
+          cpu: 2
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 1Gi
+      # place for any other fields, for example:
+      # env:
+      #   - name: PERSON_NAME
+      #     value: "John"
+      # maybe runtimeImageOverride and customRuntimeConfiguration?
+      
+  status:
+    conditions:
+      - lastTransitionTime: "2020-04-14T08:17:11Z"
+        message: "Deployment my-test-function-nxjdp is ready"
+        reason: DeploymentReady
+        status: "True"
+        type: Running
+      - lastTransitionTime: "2020-04-14T08:16:55Z"
+        message: "Job my-test-function-build-552ft finished"
+        reason: JobFinished
+        status: "True"
+        type: BuildReady
+      - lastTransitionTime: "2020-04-14T08:16:16Z"
+        message: "ConfigMap my-test-function-xv6pc created"
+        reason: ConfigMapCreated
+        status: "True"
+        type: ConfigurationReady
