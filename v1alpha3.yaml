@@ -8,42 +8,41 @@ metadata:
 spec:
   runtime: nodejs16
   runtimeImageOverride: any-image:latest
-  customRuntimeConfiguration:
-    name: "config"
-    namespace: "default"
+  source:
+    # gitRepository:
+    #   url: github.com/username/repo
+    #   baseDir: "/"
+    #   reference: "branchA"
+    #   auth:
+    #     type: basic
+    #     secretName: secret-name
+    inline:
+      dependencies: |
+        {
+          "name": "hellowithdeps",
+          "version": "0.0.1",
+          "dependencies": {
+            "end-of-stream": "^1.4.1",
+            "from2": "^2.3.0",
+            "lodash": "^4.17.5"
+          }
+        }
+      source: |
+        module.exports = {
+          main: function(event, context) {
+            const name = process.env.PERSON_NAME;
+            return 'Hello ' + name;
+          }
+        }
+
   templates:
+
     function: # maybe deployment? or pod? or split it into pod and deployment?
       metadata:
         labels:
           foo1: tmp1
         annoations:
           foo2: tmp2
-      source:
-        # gitRepository:
-        #   url: github.com/username/repo
-        #   baseDir: "/"
-        #   reference: "branchA"
-        #   auth:
-        #     type: basic
-        #     secretName: secret-name
-        inline:
-          dependencies: |
-            {
-              "name": "hellowithdeps",
-              "version": "0.0.1",
-              "dependencies": {
-                "end-of-stream": "^1.4.1",
-                "from2": "^2.3.0",
-                "lodash": "^4.17.5"
-              }
-            }
-          source: |
-            module.exports = {
-              main: function(event, context) {
-                const name = process.env.PERSON_NAME;
-                return 'Hello ' + name;
-              }
-            }
       scaleConfig:
         minReplicas: 3
         maxReplicas: 3
@@ -58,6 +57,7 @@ spec:
         requests:
           cpu: 500m
           memory: 500Mi
+          
     build:
       metadata:
         labels:
